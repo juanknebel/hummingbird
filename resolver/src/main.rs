@@ -1,22 +1,27 @@
-use axum::{routing::get, Router};
+mod api;
+mod application;
+mod error;
+mod resolver;
+
+use crate::application::app::Application;
+use axum::Router;
 use dotenv;
 use env_logger;
 use log::info;
-use std::net::SocketAddr;
 
 #[tokio::main]
 async fn main() {
   dotenv::dotenv().ok();
   env_logger::init();
-  let router = Router::new().route("/hello", get(hello));
-  let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
-  info!("LISTENING on {addr}");
+  let mut router = Router::new();
+  let application = Application::new();
+  let addr = application.address();
+  for a_route in application.routers() {
+    router = router.merge(a_route);
+  }
+  info!("[Listening on {addr}]");
   axum::Server::bind(&addr)
     .serve(router.into_make_service())
     .await
     .unwrap();
-}
-
-async fn hello() -> &'static str {
-  "Hello hummingbird"
 }
