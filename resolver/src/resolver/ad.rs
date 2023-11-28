@@ -1,8 +1,8 @@
 use crate::api::metadata::Metadata;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
-#[derive(Clone, Debug, Default, Serialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Ad {
   id: i32,
   gender: String,

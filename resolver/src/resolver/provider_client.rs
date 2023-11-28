@@ -1,4 +1,7 @@
-use crate::resolver::{ad::Ad, error::Result};
+use crate::resolver::{
+  ad::Ad,
+  error::{Error, Result},
+};
 use axum::async_trait;
 use rand::Rng;
 
@@ -23,13 +26,17 @@ impl ProviderHttp {
 #[async_trait]
 impl Provider for ProviderHttp {
   async fn get_ads(&self) -> Result<Vec<Ad>> {
-    let mut rng = rand::thread_rng();
-    let random_number: i32 = rng.gen_range(1..i32::MAX);
-    let random_number_2: i32 = rng.gen_range(1..i32::MAX);
-    Ok(vec![
-      Ad::new(random_number),
-      Ad::new(random_number_2),
-    ])
+    let endpoint = self.host.to_string() + "/provide/ads";
+    let response = reqwest::get(endpoint.as_str()).await.map_err(|e| {
+      Error::ProviderConnectionFail {
+        kind: e.to_string(),
+      }
+    })?;
+    let ads = response
+      .json::<Vec<Ad>>()
+      .await
+      .map_err(|_| Error::CannotParseAds)?;
+    Ok(ads)
   }
 }
 

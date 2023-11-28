@@ -3,11 +3,12 @@ pub type Result<T> = core::result::Result<T, Error>;
 /// The resolver module errors.
 #[derive(Clone, Debug, strum_macros::AsRefStr)]
 pub enum Error {
-  ProviderConnectionFail,
+  ProviderConnectionFail { kind: String },
   NoAds,
   CannotUpdateAds,
   CannotAcquirerWriteLock,
   CannotAcquirerReadLock,
+  CannotParseAds,
 }
 
 impl core::fmt::Display for Error {

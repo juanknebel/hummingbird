@@ -17,7 +17,7 @@ impl Application {
     // -- Configurations
     let host = std::env::var("HOST").expect("Host undefined");
     let provider_host =
-      std::env::var("PROVIDER_HOST").expect("Provider host must be defined");
+      std::env::var("PROVIDER_URL").expect("Provider host must be defined");
     let update_every =
       std::env::var("UPDATE_EVERY").map_or("30".to_string(), |s| s);
     let update_every =
