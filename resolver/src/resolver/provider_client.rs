@@ -1,7 +1,5 @@
-use crate::resolver::{
-  ad::Ad,
-  error::{Error, Result},
-};
+use crate::resolver::error::{Error, Result};
+use ad::Ad;
 use axum::async_trait;
 use rand::Rng;
 

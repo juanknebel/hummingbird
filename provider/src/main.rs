@@ -1,8 +1,8 @@
+use ad::Ad;
 use axum::{routing::get, Json, Router};
 use log::info;
 use rand::Rng;
-use serde::Serialize;
-use std::{net::SocketAddr, str::FromStr, time::Duration};
+use std::{net::SocketAddr, str::FromStr};
 
 #[tokio::main]
 async fn main() {
@@ -17,34 +17,6 @@ async fn main() {
     .serve(router.into_make_service())
     .await
     .unwrap();
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct Ad {
-  id: i32,
-  gender: String,
-  city: String,
-  state: String,
-  country: String,
-  language: String,
-  incomes: String,
-  price: f32,
-  duration: Duration,
-}
-impl Ad {
-  pub fn new(id: i32) -> Self {
-    Ad {
-      id,
-      gender: "BOTH".to_string(),
-      city: "CITY".to_string(),
-      state: "STATE".to_string(),
-      country: "COUNTRY".to_string(),
-      language: "EN".to_string(),
-      incomes: "MIDDLE".to_string(),
-      price: 1.0,
-      duration: Duration::from_secs(15u64),
-    }
-  }
 }
 
 async fn list_ads() -> Result<Json<Vec<Ad>>, String> {

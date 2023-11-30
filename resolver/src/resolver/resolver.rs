@@ -2,10 +2,11 @@ use super::provider_client::{Provider, ProviderTurso};
 use crate::{
   api::metadata::Metadata,
   resolver::{
-    ad::{Ad, AdMatcher, SimpleMatcher},
+    ad_matcher::{AdMatcher, SimpleMatcher},
     error::{Error, Result},
   },
 };
+use ad::Ad;
 use log::{error, info};
 use std::sync::{Arc, RwLock};
 

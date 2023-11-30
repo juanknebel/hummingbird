@@ -1,8 +1,9 @@
 use crate::{
   api::metadata::Metadata,
   error::{Error, Result},
-  resolver::{ad::Ad, provider_client::ProviderHttp, resolver::AdResolver},
+  resolver::{provider_client::ProviderHttp, resolver::AdResolver},
 };
+use ad::Ad;
 use axum::{
   extract::{rejection::JsonRejection, State},
   routing::post,
