@@ -23,14 +23,9 @@ async fn resolve(
   State(ad_resolver): State<Arc<AdResolver<ProviderHttp>>>,
   payload: core::result::Result<Json<Metadata>, JsonRejection>,
 ) -> Result<Json<Ad>> {
-  let metadata = match payload {
-    Ok(Json(body_as_metadata)) => body_as_metadata,
-    Err(e) => {
-      return Err(Error::ParseError {
-        kind: e.body_text(),
-      });
-    },
-  };
+  let Json(metadata) = payload.map_err(|e| Error::ParseError {
+    kind: e.body_text(),
+  })?;
   match ad_resolver.resolve(metadata).await {
     Ok(ad) => Ok(Json(ad)),
     Err(_) => return Err(Error::NotFound),

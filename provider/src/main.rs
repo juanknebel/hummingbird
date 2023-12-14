@@ -1,7 +1,6 @@
 use ad::Ad;
 use axum::{routing::get, Json, Router};
 use log::info;
-use rand::Rng;
 use std::{net::SocketAddr, str::FromStr};
 
 #[tokio::main]
@@ -20,12 +19,7 @@ async fn main() {
 }
 
 async fn list_ads() -> Result<Json<Vec<Ad>>, String> {
-  let mut rng = rand::thread_rng();
-  let ads = vec![
-    Ad::new(rng.gen_range(1..i32::MAX)),
-    Ad::new(rng.gen_range(1..i32::MAX)),
-    Ad::new(rng.gen_range(1..i32::MAX)),
-  ];
+  let ads = vec![Ad::default(), Ad::default(), Ad::default()];
   info!("[Returning 3 ads]");
   Ok(Json(ads))
 }
