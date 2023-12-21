@@ -2,7 +2,7 @@ use crate::api::metadata::Metadata;
 use ad::Ad;
 
 /// The trait that specifies how an ad matcher behaviour
-pub trait AdMatcher {
+pub trait AdMatcher: Send + Sync + 'static {
   /// Based on an ad and the metadata, select the best suitable ad for the
   /// metadata.
   /// # Arguments:

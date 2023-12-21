@@ -29,10 +29,13 @@ impl Provider for ProviderHttp {
         kind: e.to_string(),
       }
     })?;
-    let ads = response
+    let mut ads = response
       .json::<Vec<Ad>>()
       .await
       .map_err(|_| Error::CannotParseAds)?;
+    // -- with this the system ensure that always is going to be an ad to return.
+    let default_add = Ad::default();
+    ads.push(default_add);
     Ok(ads)
   }
 }

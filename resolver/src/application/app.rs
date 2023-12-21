@@ -5,6 +5,8 @@ use crate::{
 use axum::Router;
 use dotenv::dotenv;
 use std::{net::SocketAddr, str::FromStr, sync::Arc, time::Duration};
+use crate::resolver::ad_matcher::{AdMatcher, SimpleMatcher};
+use crate::resolver::provider_client::Provider;
 
 pub struct Application {
   addr: SocketAddr,
@@ -24,7 +26,8 @@ impl Application {
       Duration::from_secs(u64::from_str(update_every.as_str()).unwrap());
 
     let provider = ProviderHttp::new(provider_host);
-    let resolver = AdResolver::new(provider);
+    let matcher = SimpleMatcher;
+    let resolver: AdResolver<SimpleMatcher, ProviderHttp> = AdResolver::new(matcher, provider);
 
     // -- Routes
     let mut routes = vec![];
@@ -49,7 +52,12 @@ impl Application {
   }
 }
 
-async fn updating_ads(duration: Duration, resolver: AdResolver<ProviderHttp>) {
+/// Scheduled task in charge of updating the ads the resolver could return.
+/// For now its implementation is using an infinite loop.
+/// # Arguments
+/// * duration: the interval in which it going to perform the action.
+/// * resolver: the resolver who is going to execute the action.
+async fn updating_ads(duration: Duration, resolver: AdResolver<impl AdMatcher, impl Provider>) {
   loop {
     resolver.update_ads().await.ok();
     tokio::time::sleep(duration).await;

@@ -1,7 +1,7 @@
 use crate::{
   api::metadata::Metadata,
   error::{Error, Result},
-  resolver::{provider_client::ProviderHttp, resolver::AdResolver},
+  resolver::resolver::AdResolver,
 };
 use ad::Ad;
 use axum::{
@@ -11,8 +11,10 @@ use axum::{
 };
 use log::info;
 use std::sync::Arc;
+use crate::resolver::ad_matcher::AdMatcher;
+use crate::resolver::provider_client::Provider;
 
-pub fn routes(resolver: Arc<AdResolver<ProviderHttp>>) -> Router {
+pub fn routes(resolver: Arc<AdResolver<impl AdMatcher, impl Provider>>) -> Router {
   info!("[Adding POST /resolve]");
   Router::new()
     .route("/resolve", post(resolve))
@@ -20,7 +22,7 @@ pub fn routes(resolver: Arc<AdResolver<ProviderHttp>>) -> Router {
 }
 
 async fn resolve(
-  State(ad_resolver): State<Arc<AdResolver<ProviderHttp>>>,
+  State(ad_resolver): State<Arc<AdResolver<impl AdMatcher, impl Provider>>>,
   payload: core::result::Result<Json<Metadata>, JsonRejection>,
 ) -> Result<Json<Ad>> {
   let Json(metadata) = payload.map_err(|e| Error::ParseError {

@@ -2,7 +2,7 @@ use super::provider_client::{Provider, ProviderTurso};
 use crate::{
   api::metadata::Metadata,
   resolver::{
-    ad_matcher::{AdMatcher, SimpleMatcher},
+    ad_matcher::AdMatcher,
     error::{Error, Result},
   },
 };
@@ -11,15 +11,15 @@ use log::{error, info};
 use std::sync::{Arc, RwLock};
 
 #[derive(Clone)]
-pub struct AdResolver<ProvClient> {
+pub struct AdResolver<Matcher, ProvClient> {
   provider: ProvClient,
   provider_fallback: ProviderTurso,
   ads: Arc<RwLock<Vec<Ad>>>,
-  matcher: SimpleMatcher,
+  matcher: Matcher,
 }
 
-impl<ProvClient: Provider> AdResolver<ProvClient> {
-  pub fn new(provider: ProvClient) -> Self {
+impl<Matcher: AdMatcher, ProvClient: Provider> AdResolver<Matcher, ProvClient> {
+  pub fn new(matcher: Matcher, provider: ProvClient) -> Self {
     AdResolver {
       provider,
       provider_fallback: ProviderTurso::new(
@@ -27,7 +27,7 @@ impl<ProvClient: Provider> AdResolver<ProvClient> {
         "asd".to_string(),
       ),
       ads: Arc::new(RwLock::new(Vec::new())),
-      matcher: SimpleMatcher,
+      matcher
     }
   }
 
@@ -39,20 +39,7 @@ impl<ProvClient: Provider> AdResolver<ProvClient> {
   }
 
   pub async fn update_ads(&self) -> Result<()> {
-    let new_ads = match self.provider.get_ads().await {
-      Ok(ads_from_main) => ads_from_main,
-      Err(e) => {
-        error!("[Cannot update from main provider {e}]");
-        info!("[Trying fallback]");
-        match self.provider_fallback.get_ads().await {
-          Ok(ads_from_fallback) => ads_from_fallback,
-          Err(e) => {
-            error!("[Cannot update from fallback provider {e}]");
-            return Err(Error::CannotUpdateAds);
-          },
-        }
-      },
-    };
+    let new_ads = self.retrieve_ads().await?;
 
     let mut ads_lock = self
       .ads
@@ -62,5 +49,22 @@ impl<ProvClient: Provider> AdResolver<ProvClient> {
     let size = ads_lock.len();
     info!("[Updating successfully with {size} ads]");
     Ok(())
+  }
+
+  async fn retrieve_ads(&self) -> Result<Vec<Ad>> {
+    match self.provider.get_ads().await {
+      Ok(ads) => Ok(ads),
+      Err(err) => {
+        error!("[Cannot update from main provider {err}]");
+        info!("[Trying fallback]");
+        match self.provider_fallback.get_ads().await {
+          Ok(ads) => Ok(ads),
+          Err(other_err) => {
+            error!("[Cannot update from fallback provider {other_err}]");
+            Err(Error::CannotUpdateAds)
+          }
+        }
+      }
+    }
   }
 }
